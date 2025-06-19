@@ -9,6 +9,10 @@
 #define MIN_ARGS 3
 #define MAX_ARGS 4
 
+#define N_REGS 1
+#define ORDER 2
+#define OUT_FILE 3
+
 
 typedef struct {
     int n_regs;
@@ -40,7 +44,7 @@ bool verify_order(char *ord) {
    return (strcmp(ord, "asc") == 0 ) ? true : (strcmp(ord, "desc") == 0) ? true : (strcmp(ord, "al") == 0) ? true : false;
 }
 bool get_params(command_params_t *params, int argc, char **argv){
-    char *num_of_regs = argv[1];
+    char *num_of_regs = argv[N_REGS];
     if (!verify_num_of_registers(num_of_regs)){
         printf("O primeiro argumento precisa ser um número inteiro!\n");
         return false;
@@ -48,7 +52,7 @@ bool get_params(command_params_t *params, int argc, char **argv){
 
     params->n_regs = atoi(num_of_regs);
 
-    char *ord = argv[2];
+    char *ord = argv[ORDER];
 
     if (!verify_order(ord)) {
         printf("A ordem deve ser Ascendente (asc), Descendente (desc) ou Aleatorio (al)\n");
@@ -57,9 +61,9 @@ bool get_params(command_params_t *params, int argc, char **argv){
 
     params->ord = ord;
 
-    if (argc == 4)
-        params->out = argv[3];
-    else if (argc == 3)
+    if (argc == MAX_ARGS)
+        params->out = argv[OUT_FILE];
+    else if (argc == MIN_ARGS)
         params->out = "regs.bin";
 
     return true;
