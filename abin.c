@@ -1,4 +1,5 @@
 #include "include/abin.h"
+#include <string.h>
 
 void find_dad(FILE *binary_arq, int child_key, int child_pos) {
     reg_abin_t act_reg;
@@ -80,6 +81,42 @@ bool create_binary_tree(FILE *source, int qnt_regs) {
         top++;
     }
 
+    fclose(dest);
     return true;
+}
+
+bool binary_search(FILE *source, reg_t *x){
+    if (source == NULL)
+        return false;
+
+    static bool returned_value = false;
+
+    int search_key = x->chave;
+
+    reg_abin_t reg_node;
+    fread(&reg_node, sizeof(reg_abin_t), 1, source);
+
+    if  (search_key == reg_node.reg.chave){
+        *x = reg_node.reg;
+        returned_value = true;
+        return returned_value;
+    }
+    else if (search_key < reg_node.reg.chave){
+        if (reg_node.left_node == -1)
+            return returned_value;
+        long desloc = reg_node.left_node * sizeof(reg_abin_t);
+        fseek(source, desloc, SEEK_SET);
+        binary_search(source, x);
+    }
+    else {
+        if (reg_node.right_node == -1)
+            return returned_value;
+        long desloc = reg_node.right_node * sizeof(reg_abin_t);
+        fseek(source, desloc, SEEK_SET);
+        binary_search(source, x);
+
+    }
+
+    return returned_value;
 
 }

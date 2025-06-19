@@ -14,4 +14,5 @@ typedef struct {
 
 
 bool create_binary_tree(FILE *source, int qnt_regs);
+bool binary_search(FILE *source, reg_t *x);
 #endif // __ABIN_H__
