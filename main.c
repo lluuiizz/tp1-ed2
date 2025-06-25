@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
         case 1:
             // Pesquisa sequencial indexada
             {
-                if (situacao != 1) {
+                if (situacao != 3) {
                     printf("Situação %d não é suportada para pesquisa sequencial indexada.\n", situacao);
                     return 1;
                 }
@@ -45,7 +45,11 @@ int main(int argc, char *argv[]) {
                 reg_t x;
                 x.chave = chave;
                 fseek(fp, 0, SEEK_SET);
-                bool found = search(fp, "asc", table, &x);
+                bool found;
+                if (situacao == 1)
+                    found = search(fp, "asc", table, &x);
+                else
+                    found = search(fp, "desc", table, &x);
 
                 if (found)
                     printf("Registro encontrado: chave = %d\n", x.chave);
