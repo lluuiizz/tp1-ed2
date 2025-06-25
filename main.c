@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     int quantidade = atoi(argv[2]);
     int situacao = atoi(argv[3]);
     int chave = atoi(argv[4]);
-    int exibirChaves = (argc == 6 && strcmp(argv[5], "-P") == 0);
+    bool exibirChaves = (argc > 6 && (strcmp(argv[5], "-P") == 0) ? true : false);
 
     char nomeArquivo[64] = "registros.bin";
 
@@ -39,9 +39,6 @@ int main(int argc, char *argv[]) {
                 alloc_index_table(&table, quantidade);
                 create_index_table(fp, &table);
 
-                if (exibirChaves)
-                    exibir_reg_asi(fp, quantidade, &table);
-
                 reg_t x;
                 x.chave = chave;
                 fseek(fp, 0, SEEK_SET);
@@ -57,6 +54,22 @@ int main(int argc, char *argv[]) {
                     printf("Registro não encontrado\n");
                 print_counters_asi();
 
+                if (exibirChaves) {
+                    for (int i = 6; i < argc; i++) {
+                        reg_t x;
+                        x.chave = atoi(argv[i]);
+                        if (situacao == 1)
+                            found = search(fp, "asc", table, &x);
+                        else
+                            found = search(fp, "desc", table, &x);
+
+                        if (found)
+                            printf("Registro encontrado: chave = %d\n", x.chave);
+                        else
+                            printf("Registro não encontrado\n");
+                        print_counters_asi();
+                    }
+                }
                 fclose(fp);
                 free(table.table);
             }
