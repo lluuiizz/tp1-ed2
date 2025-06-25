@@ -12,7 +12,7 @@ typedef struct {
     int tam;
 } index_table_t;
 
-typedef reg_t pag_t[ITENS_PAG]; //  Pagina
+typedef reg_t pag_t[ITENS_PAG]; // Pagina
 
 // Tam é a quantidade de registros no arquivo
 // Como cada página guardara 4 registros então
@@ -22,5 +22,7 @@ typedef reg_t pag_t[ITENS_PAG]; //  Pagina
 void alloc_index_table(index_table_t* source, int tam);
 bool create_index_table(FILE* fp, index_table_t *source);
 bool search(FILE *arq, char* ord, index_table_t, reg_t *x);
+void exibir_reg_asi(FILE *fp, int quantidade, index_table_t *table);
+void print_counters_asi();
 
 #endif // __ASI_H__

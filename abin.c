@@ -1,31 +1,47 @@
 #include "include/abin.h"
 #include <string.h>
 
+// Contadores para pré-processamento (criação da árvore)
+int TRANSF_EXT_INT_ABIN_PRE = 0;
+int COMP_CHAVES_ABIN_PRE = 0;
+
+// Contadores para pós-processamento (pesquisa)
+int TRANSF_EXT_INT_ABIN_POS = 0;
+int COMP_CHAVES_ABIN_POS = 0;
+
+
+
+
+// Função recursiva para encontrar o "pai" de um novo nó na árvore binária
 void find_dad(FILE *binary_arq, int child_key, int child_pos) {
     reg_abin_t act_reg;
-    fread(&act_reg, sizeof(reg_abin_t), 1, binary_arq);
+    fread(&act_reg, sizeof(reg_abin_t), 1, binary_arq); // Lê o nó atual do arquivo
+    TRANSF_EXT_INT_ABIN_PRE++; // Conta transferência de item
 
     int act_key = act_reg.reg.chave;
 
-    // Go to left node
+    // Se a chave do filho é menor, vai para o nó à esquerda
     if (child_key < act_key) {
-        if (act_reg.left_node == -1){
+        COMP_CHAVES_ABIN_PRE++; // Conta comparação de chave
+        if (act_reg.left_node == -1){ // Se não há filho à esquerda, insere aqui
             act_reg.left_node = child_pos;
 
-            long where_am_i = ftell(binary_arq);
-            fseek(binary_arq, where_am_i - sizeof(reg_abin_t), SEEK_SET);
-            fwrite(&act_reg, sizeof(reg_abin_t), 1, binary_arq);
+            long where_am_i = ftell(binary_arq); // Salva posição atual
+            fseek(binary_arq, where_am_i - sizeof(reg_abin_t), SEEK_SET); // Volta para o início do nó
+            fwrite(&act_reg, sizeof(reg_abin_t), 1, binary_arq); // Atualiza o nó com o novo filho
             return;
         }
         else {
+            // Vai recursivamente para o filho à esquerda
             long desloc = act_reg.left_node * sizeof(reg_abin_t);
             fseek(binary_arq, desloc, SEEK_SET);
             find_dad(binary_arq, child_key, child_pos);
         }
     }
-    // Go to right node
+    // Se a chave do filho é maior, vai para o nó à direita
     else if (child_key > act_key){
-        if (act_reg.right_node == -1){
+        COMP_CHAVES_ABIN_PRE++; // Conta comparação de chave
+        if (act_reg.right_node == -1){ // Se não há filho à direita, insere aqui
             act_reg.right_node = child_pos;
 
             long where_am_i = ftell(binary_arq);
@@ -34,89 +50,127 @@ void find_dad(FILE *binary_arq, int child_key, int child_pos) {
             return;
         }
         else {
+            // Vai recursivamente para o filho à direita
             long desloc = act_reg.right_node * sizeof(reg_abin_t);
             fseek(binary_arq, desloc, SEEK_SET);
             find_dad(binary_arq, child_key, child_pos);
         }
     }
-    else
-        return;
+    else {
+        COMP_CHAVES_ABIN_PRE++; // Conta comparação de chave (igual)
+        return; // Se for igual, não faz nada (não insere duplicados)
+    }
 }
 
+// Adiciona um novo nó à árvore binária no arquivo
 bool add_node(FILE *binary_arq, reg_t node_reg, int top){
-    // Alocate the new node
+    // Cria o novo nó com ponteiros para filhos nulos
     reg_abin_t new_node;
     new_node.left_node = -1;
     new_node.right_node = -1;
     new_node.reg = node_reg;
-    fseek(binary_arq, 0, SEEK_END);
-    fwrite(&new_node, sizeof(reg_abin_t), 1, binary_arq);
+    fseek(binary_arq, 0, SEEK_END); // Vai para o final do arquivo
+    fwrite(&new_node, sizeof(reg_abin_t), 1, binary_arq); // Escreve o novo nó
+    TRANSF_EXT_INT_ABIN_PRE++; // Conta transferência de item
 
-    // If it was the first node, so it returns
+    // Se for o primeiro nó (raiz), não precisa procurar pai
     if (top == 0)
         return true;
 
-    // Finds the father of the new node
+    // Procura o pai do novo nó e atualiza o ponteiro correspondente
     int node_key = node_reg.chave;
-    fseek(binary_arq, 0, SEEK_SET);
-
+    fseek(binary_arq, 0, SEEK_SET); // Volta para o início do arquivo
     find_dad(binary_arq, node_key, top);
 
     return true;
-
 }
+
+// Cria uma árvore binária de busca a partir de um arquivo de registros
 bool create_binary_tree(FILE *source, int qnt_regs) {
 
     FILE *dest;
 
+    // Verifica se o arquivo de origem existe e abre o arquivo de destino
     if (source == NULL || (dest = fopen("binary_tree.bin", "w+b")) == NULL)
         return false;
 
     int top = 0;
 
     reg_t reg;
-    for (int i = 0; i <= qnt_regs; i++){
+    // Lê cada registro do arquivo de origem e adiciona na árvore binária
+    for (int i = 0; i < qnt_regs; i++){
         fread(&reg, sizeof(reg_t), 1, source);
+        TRANSF_EXT_INT_ABIN_PRE++; // Conta transferência de item
         add_node(dest, reg, top);
         top++;
     }
 
-    fclose(dest);
+    fclose(dest); // Fecha o arquivo da árvore
     return true;
 }
 
+// Busca binária recursiva em arquivo de árvore binária
 bool binary_search(FILE *source, reg_t *x){
     if (source == NULL)
         return false;
 
-    static bool returned_value = false;
+    static bool returned_value = false; // Valor de retorno estático para recursão
 
     int search_key = x->chave;
 
     reg_abin_t reg_node;
-    fread(&reg_node, sizeof(reg_abin_t), 1, source);
+    fread(&reg_node, sizeof(reg_abin_t), 1, source); // Lê o nó atual
+    TRANSF_EXT_INT_ABIN_POS++; // Conta transferência de item
 
+    // Se encontrou a chave, copia o registro e retorna true
     if  (search_key == reg_node.reg.chave){
+        COMP_CHAVES_ABIN_POS++; // Conta comparação de chave
         *x = reg_node.reg;
         returned_value = true;
         return returned_value;
     }
+    // Se a chave buscada é menor, busca à esquerda
     else if (search_key < reg_node.reg.chave){
+        COMP_CHAVES_ABIN_POS++; // Conta comparação de chave
         if (reg_node.left_node == -1)
-            return returned_value;
+            return returned_value; // Não encontrou
         long desloc = reg_node.left_node * sizeof(reg_abin_t);
         fseek(source, desloc, SEEK_SET);
         binary_search(source, x);
     }
+    // Se a chave buscada é maior, busca à direita
     else {
+        COMP_CHAVES_ABIN_POS++; // Conta comparação de chave
         if (reg_node.right_node == -1)
-            return returned_value;
+            return returned_value; // Não encontrou
         long desloc = reg_node.right_node * sizeof(reg_abin_t);
         fseek(source, desloc, SEEK_SET);
         binary_search(source, x);
-
     }
 
     return returned_value;
+}
 
+void exibir_reg_abin(FILE *fp, int quantidade) {
+    reg_abin_t temp;
+    fseek(fp, 0, SEEK_SET);
+    printf("Chaves dos registros:\n");
+    for (int i = 0; i < quantidade; i++) {
+        fread(&temp, sizeof(reg_abin_t), 1, fp);
+        printf("%d ", temp.reg.chave);
+    }
+    printf("\n");
+    fseek(fp, 0, SEEK_SET); // Volta para o início para a busca
+}
+
+void print_counters_abin() { // Função para exibir os contadores de transferências e comparações
+    printf("Pré-processamento:\n");
+    printf("  Transferências: %d\n", TRANSF_EXT_INT_ABIN_PRE);
+    printf("  Comparações: %d\n", COMP_CHAVES_ABIN_PRE);
+    printf("Pós-processamento:\n");
+    printf("  Transferências: %d\n", TRANSF_EXT_INT_ABIN_POS);
+    printf("  Comparações: %d\n", COMP_CHAVES_ABIN_POS);
+    printf("Total:\n");
+    printf("  Transferências: %d\n", TRANSF_EXT_INT_ABIN_PRE + TRANSF_EXT_INT_ABIN_POS);
+    printf("  Comparações: %d\n", COMP_CHAVES_ABIN_PRE + COMP_CHAVES_ABIN_POS);
 }

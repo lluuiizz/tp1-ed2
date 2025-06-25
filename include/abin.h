@@ -12,7 +12,8 @@ typedef struct {
 
 } reg_abin_t;
 
-
 bool create_binary_tree(FILE *source, int qnt_regs);
 bool binary_search(FILE *source, reg_t *x);
+void print_counters_abin();
+void exibir_reg_abin(FILE *fp, int quantidade);
 #endif // __ABIN_H__
