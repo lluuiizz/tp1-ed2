@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
         case 1:
             // Pesquisa sequencial indexada
             {
-                if (situacao != 3) {
+                if (situacao != 1 && situacao != 2) {
                     printf("Situação %d não é suportada para pesquisa sequencial indexada.\n", situacao);
                     return 1;
                 }
