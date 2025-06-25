@@ -92,9 +92,6 @@ int main(int argc, char *argv[]) {
                     return 1;
                 }
 
-                if (exibirChaves)
-                    exibir_reg_abin(btree, quantidade);
-
                 reg_t x;
                 x.chave = chave;
                 bool found = binary_search(btree, &x);
@@ -104,7 +101,19 @@ int main(int argc, char *argv[]) {
                 else
                     printf("Registro não encontrado\n");
                 print_counters_abin();
+                if (exibirChaves) {
+                    for (int i = 6; i < argc; i++) {
+                        reg_t x;
+                        x.chave = atoi(argv[i]);
+                        found = binary_search(btree, &x);
 
+                        if (found)
+                            printf("Registro encontrado: chave = %d\n", x.chave);
+                        else
+                            printf("Registro não encontrado\n");
+                        print_counters_asi();
+                    }
+                }
                 fclose(btree);
             }
             break;
@@ -118,16 +127,29 @@ int main(int argc, char *argv[]) {
                 }
                 tipo_registro x;
                 x.chave = chave;
-                int resultado = 0;
+                bool found;
                 if (arvore)
-                    resultado = pesquisa_arvore_b(&x, arvore);
+                    found = pesquisa_arvore_b(&x, arvore);
 
-                if (resultado)
+                if (found )
                     printf("Registro encontrado: chave = %d\n", x.chave);
                 else
                     printf("Registro não encontrado\n");
                 print_counters_arvb();
 
+                if (exibirChaves) {
+                    for (int i = 6; i < argc; i++) {
+                        tipo_registro x;
+                        x.chave = atoi(argv[i]);
+                        found = pesquisa_arvore_b(&x, arvore);
+
+                        if (found)
+                            printf("Registro encontrado: chave = %d\n", x.chave);
+                        else
+                            printf("Registro não encontrado\n");
+                        print_counters_asi();
+                    }
+                }
                 if (arvore)
                     libera_arvore_b(arvore);
             }
@@ -154,10 +176,7 @@ int main(int argc, char *argv[]) {
                 }
                 fclose(fp);
 
-                if (exibirChaves && arvore) {
-                    exibir_reg_arvbstar(arvore);
-                    printf("\n");
-                }
+
 
                 tipo_registro_estrela x;
                 x.chave = chave;
@@ -170,6 +189,20 @@ int main(int argc, char *argv[]) {
                 else
                     printf("Registro não encontrado\n");
                 print_counters_bstar();
+
+                if (exibirChaves) {
+                    for (int i = 6; i < argc; i++) {
+                        tipo_registro_estrela x;
+                        x.chave = atoi(argv[i]);
+                        resultado = pesquisa_b_estrela(&x, arvore);
+
+                        if (resultado)
+                            printf("Registro encontrado: chave = %d\n", x.chave);
+                        else
+                            printf("Registro não encontrado\n");
+                        print_counters_asi();
+                    }
+                }
                 if (arvore)
                     libera_arvore_b_estrela(arvore);
             }
