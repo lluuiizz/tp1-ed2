@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     }
     else{
         strcpy(nomeArquivo, "regs_binaries/al.bin");
-        nomeArquivo[19] = '\0';
+        nomeArquivo[20] = '\0';
 
     }
 
