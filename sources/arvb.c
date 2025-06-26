@@ -23,21 +23,27 @@ bool pesquisa_arvore_b(tipo_registro *x, tipo_apontador Ap)
     }
 
     // Pesquisa sequencial para se encontrar o intervalo desejado
-    while (i < Ap->n && x->chave > Ap->r[i-1].chave) i++;
+    while (i < Ap->n && x->chave > Ap->r[i-1].chave){COMP_CHAVES_ARVB_POS++; i++;}
 
     // Verifica se a chave desejada foi localizada
+
     if (x->chave == Ap->r[i-1].chave)
     {
+        COMP_CHAVES_ARVB_POS++;
         *x = Ap->r[i-1];
         returned_value = true;
         return returned_value;
     }
 
     // Ativacao recursiva da Pesquisa em uma das subarvores (esquerda ou direita)
-    if (x->chave < Ap->r[i-1].chave)
+    if (x->chave < Ap->r[i-1].chave){
+        COMP_CHAVES_ARVB_POS++;
         pesquisa_arvore_b(x, Ap->p[i-1]);
-    else
+    }
+    else{
+        COMP_CHAVES_ARVB_POS++;
         pesquisa_arvore_b(x, Ap->p[i]);
+    }
 
     return returned_value;
 }
@@ -68,6 +74,8 @@ void insere_na_pag(tipo_apontador Ap, tipo_registro Reg, tipo_apontador ApDir)
     {
         if (Reg.chave >= Ap->r[k-1].chave)
         {
+
+            COMP_CHAVES_ARVB_PRE++;
             NaoAchouPosicao = false;
             break;
         }
@@ -104,20 +112,22 @@ void ins(tipo_registro Reg, tipo_apontador Ap, short *Cresceu,
     }
 
     // Pesquisa o intervalo para o registro na página atual
-    while (i < Ap->n && Reg.chave > Ap->r[i-1].chave)
-        i++;
-    
+    while (i < Ap->n && Reg.chave > Ap->r[i-1].chave){COMP_CHAVES_ARVB_PRE++; i++;}
+
     // Se a chave já existe, retorna um erro
     if (Reg.chave == Ap->r[i-1].chave)
     {
+        COMP_CHAVES_ARVB_PRE++;
         *Cresceu = false;
         return;
     }
 
     // Ajusta o índice 'i' se a chave for menor que a chave na posição i-1
-    if (Reg.chave < Ap->r[i-1].chave)
+    if (Reg.chave < Ap->r[i-1].chave){
+        COMP_CHAVES_ARVB_PRE++;
         i--;
-    
+    }
+
     // Chamada recursiva para inserir na subárvore apropriada
     ins(Reg, Ap->p[i], Cresceu, RegRetorno, ApRetorno);
 
@@ -208,6 +218,7 @@ tipo_apontador construir_arvore_b(const char *nomeArquivo, int quantidade){
     assert(new_tree != NULL);
     tipo_registro new_reg;
     for (int i = 0; i < quantidade; i++) {
+        TRANSF_EXT_INT_ARVB_PRE++;
         fread(&new_reg, sizeof(tipo_registro), 1, src);
         insere(new_reg, &new_tree);
     }
@@ -217,18 +228,18 @@ tipo_apontador construir_arvore_b(const char *nomeArquivo, int quantidade){
 
 }
 
-/*
-void libera_arvore_b(tipo_apontador arvore){
-    int i = 0;
 
-    while (arvore) {
-        for (int i = 0; i < arvore->n; i++){
-            if (arvore->p[i] != NULL)
-                libera_arvore_b(arvore->p[i]);
-        }
+void libera_arvore_b(tipo_apontador arvore){
+
+    if (arvore == NULL) return;
+
+    for (int i = 0; i <= arvore->n; i++) {
+        libera_arvore_b(arvore->p[i]);
     }
 
-}*/
+    free(arvore);
+    arvore = NULL;
+}
 // Exibe os contadores de operações da árvore B
 void print_counters_arvb() {
     printf("Pré-processamento:\n");

@@ -8,7 +8,7 @@
 // Funções da Árvore B
 void insere(tipo_registro , tipo_apontador* );
 bool pesquisa_arvore_b(tipo_registro *, tipo_apontador);
-//void libera_arvore_b(tipo_apontador arvore);
+void libera_arvore_b(tipo_apontador arvore);
 tipo_apontador construir_arvore_b(const char *nomeArquivo, int quantidade);
 void print_counters_arvb();
 #endif // __ARVB_H__
