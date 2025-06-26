@@ -196,7 +196,7 @@ void insere_b_estrela(tipo_registro_estrela reg, tipo_apontador_estrela *arv) {
     }
 }
 
-tipo_apontador_estrela contruir_arvore_b_estrela(const char *nomeArquivo, int quantidade) {
+tipo_apontador_estrela construir_arvore_b_estrela(const char *nomeArquivo, int quantidade) {
     FILE *fp = fopen(nomeArquivo, "rb");
     if (!fp) {
         printf("Erro ao abrir arquivo %s\n", nomeArquivo);

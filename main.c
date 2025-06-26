@@ -19,7 +19,13 @@ int main(int argc, char *argv[]) {
     int chave = atoi(argv[4]);
     bool exibirChaves = (argc > 6 && (strcmp(argv[5], "-P") == 0) ? true : false);
 
-    char nomeArquivo[64] = "registros.bin";
+    char nomeArquivo[64] = {0};
+    if (situacao == 1)
+        strcpy(nomeArquivo, "regs_binaries/asc.bin");
+    else if (situacao == 2)
+        strcpy(nomeArquivo, "regs_binaries/desc.bin");
+    else
+        strcpy(nomeArquivo, "regs_binaries/al.bin");
 
     switch (metodo) {
         case 1:
