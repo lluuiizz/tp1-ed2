@@ -47,20 +47,6 @@ bool pesquisa_arvore_b(tipo_registro *x, tipo_apontador Ap)
 
     return returned_value;
 }
-/*
-void Imprime(tipo_apontador arvore){
-int i = 0;
-    if (arvore == NULL) return;
-
-    while (i <= arvore->n) {
-        Imprime(arvore->p[i]);
-
-        if (i != arvore->n)
-            printf(arvore->r[i].chave + " ");
-
-        i++;
-    }
-}*/
 
 void insere_na_pag(tipo_apontador Ap, tipo_registro Reg, tipo_apontador ApDir)
 {

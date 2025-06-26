@@ -3,3 +3,4 @@ main
 scratch*
 *_test*
 *.bin
+*.o

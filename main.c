@@ -8,6 +8,9 @@
 #include "include/arvb.h"
 #include "include/arvb-star.h"
 
+#define DEFAULT_ASC "regs_bin/asc.bin"
+#define DEFAULT_DESC "regs_bin/desc.bin"
+#define DEFAULT_AL "regs_bin/al.bin"
 int main(int argc, char *argv[]) {
     if (argc < 5) {
         printf("Uso: ./main <método> <quantidade> <situação> <chave> [-P]\n");
@@ -21,21 +24,12 @@ int main(int argc, char *argv[]) {
     bool exibirChaves = (argc > 6 && (strcmp(argv[5], "-P") == 0) ? true : false);
 
     char nomeArquivo[64] = {0};
-    if (situacao == 1) {
-        printf("estou em situacao 1");
-        strcpy(nomeArquivo, "regs_bin/asc.bin");
-        nomeArquivo[17] = '\0';
-
-    }
-    else if (situacao == 2){
-        strcpy(nomeArquivo, "regs_bin/desc.bin");
-        nomeArquivo[18] = '\0';
-    }
-    else{
-        strcpy(nomeArquivo, "regs_bin/al.bin");
-        nomeArquivo[16] = '\0';
-
-    }
+    if (situacao == 1) 
+        strcpy(nomeArquivo, DEFAULT_ASC);
+    else if (situacao == 2)
+        strcpy(nomeArquivo, DEFAULT_DESC);
+    else
+        strcpy(nomeArquivo, DEFAULT_AL);
 
     switch (metodo) {
         case 1:
