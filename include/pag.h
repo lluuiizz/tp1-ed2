@@ -4,16 +4,17 @@
 
 
 #include "reg.h"
-#define ORDEM 1000
+#define M 2
+#define MM 2*M
 
 typedef struct tipo_pagina* tipo_apontador;
 typedef reg_t tipo_registro;
 
-struct tipo_pagina {
+typedef struct tipo_pagina {
     int n;
-    tipo_registro r[ORDEM];
-    tipo_apontador p[ORDEM+1];
-};
+    tipo_registro r[MM];
+    tipo_apontador p[MM+1];
+} tipo_pagina_t;
 
 
 
