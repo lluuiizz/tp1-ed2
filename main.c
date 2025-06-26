@@ -20,12 +20,21 @@ int main(int argc, char *argv[]) {
     bool exibirChaves = (argc > 6 && (strcmp(argv[5], "-P") == 0) ? true : false);
 
     char nomeArquivo[64] = {0};
-    if (situacao == 1)
+    if (situacao == 1) {
+        printf("estou em situacao 1");
         strcpy(nomeArquivo, "regs_binaries/asc.bin");
-    else if (situacao == 2)
+        nomeArquivo[21] = '\0';
+
+    }
+    else if (situacao == 2){
         strcpy(nomeArquivo, "regs_binaries/desc.bin");
-    else
+        nomeArquivo[22] = '\0';
+    }
+    else{
         strcpy(nomeArquivo, "regs_binaries/al.bin");
+        nomeArquivo[19] = '\0';
+
+    }
 
     switch (metodo) {
         case 1:
@@ -100,7 +109,7 @@ int main(int argc, char *argv[]) {
                 fclose(fp);
 
                 FILE *btree = fopen("binary_tree.bin", "rb");
-                if (!btree) {
+                if (btree == NULL) {
                     printf("Erro ao abrir arquivo binary_tree.bin\n");
                     return 1;
                 }
