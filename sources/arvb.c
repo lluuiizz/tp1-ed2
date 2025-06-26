@@ -8,184 +8,192 @@ int COMP_CHAVES_ARVB_PRE = 0;    // Comparações de chaves durante a construç�
 // Contadores para pós-processamento (busca)
 int TRANSF_EXT_INT_ARVB_POS = 0; // Transferências de páginas durante a busca
 int COMP_CHAVES_ARVB_POS = 0;    // Comparações de chaves durante a busca
-
-// Inicializa a árvore B (ponteiro para NULL)
-void inicializa(tipo_apontador *arvore) {
-    *arvore = NULL;
+void Inicializa (TipoApontador Arvore)
+{
+Arvore = NULL;
 }
 
-// Busca uma chave na árvore B (pós-processamento)
-// Retorna true se encontrou, false caso contrário
-bool pesquisa_arvore_b(tipo_registro *x, tipo_apontador ap) {
-    if (ap == NULL) return false;      // Árvore vazia
-    if (ap->n == 0) return false;      // Página vazia
+void Pesquisa(TipoRegistro *x, TipoApontador Ap)
+{
+    long i = 1;
 
-    int i = 1;
-    // Procura a posição onde a chave pode estar ou deve ser buscada
-    while (i < ap->n && (COMP_CHAVES_ARVB_POS++, x->chave > ap->r[i-1].chave)) i++;
-    COMP_CHAVES_ARVB_POS++; // Conta a última comparação (==)
-
-    // Se encontrou a chave na página atual
-    if (i <= ap->n && x->chave == ap->r[i-1].chave) {
-        *x = ap->r[i-1]; // Copia o registro encontrado
-        return true;
+    if (Ap == NULL)
+    {
+        printf("TipoRegistro nao esta presente na arvore\n");
+        return;
     }
 
-    // Conta transferência de página (descendo para um filho)
-    TRANSF_EXT_INT_ARVB_POS++;
+    // Pesquisa sequencial para se encontrar o intervalo desejado
+    while (i < Ap->n && x->Chave > Ap->r[i-1].Chave) i++;
 
-    // Decide para qual filho descer
-    if (i == 1)
-        return pesquisa_arvore_b(x, ap->p[0]);      // Filho mais à esquerda
-    else if (i <= ap->n)
-        return pesquisa_arvore_b(x, ap->p[i]);      // Filho intermediário
+    // Verifica se a chave desejada foi localizada
+    if (x->Chave == Ap->r[i-1].Chave)
+    {
+        *x = Ap->r[i-1];
+        return;
+    }
+
+    // Ativacao recursiva da Pesquisa em uma das subarvores (esquerda ou direita)
+    if (x->Chave < Ap->r[i-1].Chave)
+        Pesquisa(x, Ap->p[i-1]);
     else
-        return pesquisa_arvore_b(x, ap->p[ap->n]);  // Filho mais à direita
+        Pesquisa(x, Ap->p[i]);
 }
 
-// exibir_reg_arvb as chaves da árvore B em ordem (percurso em ordem)
-void exibir_reg_arvb(tipo_apontador arvore) {
+void Imprime(TipoApontador arvore){
+int i = 0;
     if (arvore == NULL) return;
-    int i = 0;
     while (i <= arvore->n) {
-        exibir_reg_arvb(arvore->p[i]); // imprime a subárvore à esquerda
-        if (i != arvore->n)
-            printf("%d ", arvore->r[i].chave); // imprime a chave do nó
+        Imprime(arvore->p[i]);
+    if (i != arvore->n)
+        printf(arvore->r[i].Chave + " ");
         i++;
     }
 }
 
-// Insere um registro em uma página (nó) da árvore B
-void insere_na_pagina(tipo_apontador ap, tipo_registro reg, tipo_apontador ap_dir) {
-    int k = ap->n;
-    // Move os registros maiores para a direita para abrir espaço
-    while (k > 0 && (COMP_CHAVES_ARVB_PRE++, reg.chave < ap->r[k-1].chave)) {
-        ap->r[k] = ap->r[k-1];
-        ap->p[k+1] = ap->p[k];
-        k--;
-    }
-    // Insere o novo registro e o ponteiro à direita
-    ap->r[k] = reg;
-    ap->p[k+1] = ap_dir;
-    ap->n++;
-    // Conta transferência de página (inserção)
-    TRANSF_EXT_INT_ARVB_PRE++;
-}
+void InsereNaPagina(TipoApontador Ap, TipoRegistro Reg, TipoApontador ApDir)
+{
+    short NaoAchouPosicao;
+    int k;
 
-// Função recursiva de inserção na árvore B
-// Pode causar split e propagação para cima
-void ins(tipo_registro reg, tipo_apontador ap, short *cresceu, tipo_registro *reg_retorno, tipo_apontador *ap_retorno) {
-    long i = 1, j;
-    tipo_apontador ap_temp;
-    if (ap == NULL) {
-        // Caso base: chegou em um ponteiro nulo, precisa criar novo nó
-        *cresceu = 1;
-        *reg_retorno = reg;
-        *ap_retorno = NULL;
-        return;
-    }
-    // Busca a posição correta para inserir
-    while (i < ap->n && (COMP_CHAVES_ARVB_PRE++, reg.chave > ap->r[i-1].chave)) i++;
-    COMP_CHAVES_ARVB_PRE++; // Conta a última comparação (==)
-    if (reg.chave == ap->r[i-1].chave) {
-        // Chave já existe, não insere duplicado
-        *cresceu = 0;
-        return;
-    }
-    if (reg.chave < ap->r[i-1].chave) i--;
-    // Conta transferência de página (descendo para filho)
-    TRANSF_EXT_INT_ARVB_PRE++;
-    // Chama recursivamente para o filho apropriado
-    ins(reg, ap->p[i], cresceu, reg_retorno, ap_retorno);
-    if (!*cresceu) return;
+    k = Ap->n;
+    NaoAchouPosicao = (k > 0);
 
-    // Se não precisa split, apenas insere na página
-    if (ap->n < ORDEM) {
-        insere_na_pagina(ap, *reg_retorno, *ap_retorno);
-        *cresceu = 0;
-        return;
-    }
-
-    // Split: página cheia, precisa dividir
-    ap_temp = (tipo_apontador) malloc(sizeof(struct tipo_pagina));
-    ap_temp->n = 0;
-    // Inicializa todos os ponteiros filhos com NULL
-    for (int idx = 0; idx < ORDEM + 1; idx++)
-        ap_temp->p[idx] = NULL;
-
-    int meio = ORDEM / 2;
-    if (i <= meio) {
-        // Novo registro vai para a página original
-        insere_na_pagina(ap_temp, ap->r[ORDEM-1], ap->p[ORDEM]);
-        ap->n--;
-        insere_na_pagina(ap, *reg_retorno, *ap_retorno);
-    } else {
-        // Novo registro vai para a nova página
-        insere_na_pagina(ap_temp, *reg_retorno, *ap_retorno);
-    }
-    // Move metade superior dos registros para a nova página
-    for (j = ORDEM-1; j >= meio+1; j--)
-        insere_na_pagina(ap_temp, ap->r[j-1], ap->p[j]);
-    ap->n = meio;
-    ap_temp->p[0] = ap->p[meio+1];
-    *reg_retorno = ap->r[meio]; // Registro do meio sobe
-    *ap_retorno = ap_temp;      // Nova página à direita
-}
-
-// Insere um registro na árvore B (pode criar nova raiz)
-void insere(tipo_registro reg, tipo_apontador *ap) {
-    short cresceu;
-    tipo_registro reg_retorno;
-    tipo_apontador ap_retorno, ap_temp;
-    ins(reg, *ap, &cresceu, &reg_retorno, &ap_retorno);
-    if (cresceu) {
-        // Se cresceu na raiz, cria nova raiz
-        ap_temp = (tipo_apontador) malloc(sizeof(struct tipo_pagina));
-        ap_temp->n = 1;
-        ap_temp->r[0] = reg_retorno;
-        for (int idx = 0; idx < ORDEM + 1; idx++)
-            ap_temp->p[idx] = NULL;
-        ap_temp->p[1] = ap_retorno;
-        ap_temp->p[0] = *ap;
-        *ap = ap_temp;
-        // Conta transferência de página (nova raiz)
-        TRANSF_EXT_INT_ARVB_PRE++;
-    }
-}
-
-// Libera toda a memória da árvore B (recursivo)
-void libera_arvore_b(tipo_apontador arvore) {
-    if (arvore == NULL) return;
-    for (int i = 0; i <= arvore->n; i++) {
-        if (arvore->p[i] != NULL) {
-            libera_arvore_b(arvore->p[i]);
-            arvore->p[i] = NULL;
+    while (NaoAchouPosicao)
+    {
+        if (Reg.Chave >= Ap->r[k-1].Chave)
+        {
+            NaoAchouPosicao = FALSE;
+            break;
         }
+
+        Ap->r[k] = Ap->r[k-1];
+        Ap->p[k+1] = Ap->p[k];
+        k--;
+
+        if (k < 1)
+            NaoAchouPosicao = FALSE;
     }
-    free(arvore);
+    
+    Ap->r[k] = Reg;
+    Ap->p[k+1] = ApDir;
+    Ap->n++;
 }
 
-// Constrói a árvore B a partir de um arquivo binário
-// Lê 'quantidade' registros do arquivo e insere na árvore
-tipo_apontador construir_arvore_b(const char *nomeArquivo, int quantidade) {
-    FILE *arq = fopen(nomeArquivo, "rb");
-    if (arq == NULL) {
-        printf("Erro ao abrir arquivo %s\n", nomeArquivo);
-        return NULL;
+void Ins(TipoRegistro Reg, TipoApontador Ap, short *Cresceu,
+         TipoRegistro *RegRetorno, TipoApontador *ApRetorno)
+{
+    long i = 1;
+    long j;
+    TipoApontador ApTemp;
+
+    // Caso base: se a página é nula, a inserção é aqui.
+    // O registro e o apontador de retorno são definidos, e a flag 'Cresceu' é ativada.
+    if (Ap == NULL)
+    {
+        *Cresceu = TRUE; 
+        (*RegRetorno) = Reg; 
+        (*ApRetorno) = NULL;
+        return;
     }
 
-    tipo_apontador arvore;
-    inicializa(&arvore);
-
-    tipo_registro temp;
-    for (int i = 0; i < quantidade; i++) {
-        fread(&temp, sizeof(tipo_registro),1, arq);
-        insere(temp, &arvore);
+    // Pesquisa o intervalo para o registro na página atual
+    while (i < Ap->n && Reg.Chave > Ap->r[i-1].Chave)
+        i++;
+    
+    // Se a chave já existe, retorna um erro
+    if (Reg.Chave == Ap->r[i-1].Chave)
+    {
+        printf(" Erro: Registro ja esta presente\n");
+        *Cresceu = FALSE;
+        return;
     }
-    fclose(arq);
-    return arvore;
+
+    // Ajusta o índice 'i' se a chave for menor que a chave na posição i-1
+    if (Reg.Chave < Ap->r[i-1].Chave)
+        i--;
+    
+    // Chamada recursiva para inserir na subárvore apropriada
+    Ins(Reg, Ap->p[i], Cresceu, RegRetorno, ApRetorno);
+
+    // Se a árvore não cresceu (ou seja, a inserção foi feita sem divisão), retorna.
+    if (!*Cresceu)
+        return;
+    
+    // Se a página tem espaço, insere o registro e o apontador de retorno
+    if (Ap->n < MM) /* Pagina tem espaco */
+    {
+        InsereNaPagina(Ap, *RegRetorno, *ApRetorno);
+        *Cresceu = FALSE; // A propagação de crescimento para.
+        return;
+    }
+
+    // Se a página está cheia (overflow), ela precisa ser dividida
+    /* Overflow: Pagina tem que ser dividida */
+    ApTemp = (TipoApontador)malloc(sizeof(TipoPagina));
+    if (ApTemp == NULL) {
+        printf("Erro: Nao foi possivel alocar memoria para a nova pagina.\n");
+        return;
+    }
+    ApTemp->n = 0;
+    ApTemp->p[0] = NULL;
+
+    // Decide qual parte da página será dividida
+    if (i < M + 1)
+    {
+        // Se a inserção ocorre na metade esquerda da página
+        InsereNaPagina(ApTemp, Ap->r[MM - 1], Ap->p[MM]);
+        Ap->n--;
+        InsereNaPagina(Ap, *RegRetorno, *ApRetorno);
+    }
+    else
+    {
+        // Se a inserção ocorre na metade direita da página
+        InsereNaPagina(ApTemp, *RegRetorno, *ApRetorno);
+    }
+
+    // Distribui os registros da página original para a nova página criada
+    for (j = M + 2; j <= MM; j++)
+        InsereNaPagina(ApTemp, Ap->r[j - 1], Ap->p[j]);
+    
+    // Atualiza o número de registros na página original
+    Ap->n = M;
+    
+    // Atualiza o primeiro apontador da nova página
+    ApTemp->p[0] = Ap->p[M + 1];
+    
+    // O registro do meio é promovido para a página pai
+    *RegRetorno = Ap->r[M];
+    
+    // O apontador para a nova página é retornado
+    *ApRetorno = ApTemp;
 }
+void Insere(TipoRegistro Reg, TipoApontador *Ap)
+{
+    short Cresceu;
+    TipoRegistro RegRetorno;
+    TipoPagina *ApRetorno, *ApTemp;
 
+    // Inicia a inserção recursiva
+    Ins(Reg, *Ap, &Cresceu, &RegRetorno, &ApRetorno);
+    
+    // Se a flag 'Cresceu' está ativada, a raiz precisa ser dividida.
+    if (Cresceu) /* Arvore cresce na altura pela raiz */
+    {
+        // Cria uma nova raiz
+        ApTemp = (TipoPagina *)malloc(sizeof(TipoPagina));
+        if (ApTemp == NULL) {
+            printf("Erro: Nao foi possivel alocar memoria para a nova raiz.\n");
+            return;
+        }
+        
+        ApTemp->n = 1;
+        ApTemp->r[0] = RegRetorno;
+        ApTemp->p[1] = ApRetorno;
+        ApTemp->p[0] = *Ap;
+        *Ap = ApTemp; // A nova página se torna a raiz da árvore
+    }
+}
 // Exibe os contadores de operações da árvore B
 void print_counters_arvb() {
     printf("Pré-processamento:\n");
