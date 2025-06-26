@@ -3,23 +3,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include "reg.h"
-#define ORDEM 1000
-
-typedef struct tipo_pagina* tipo_apontador;
-
-typedef struct {
-    int chave;
-    long dado1;
-    char dado2[1000];
-    char dado3[5000];
-} tipo_registro;
-
-struct tipo_pagina {
-    int n;
-    tipo_registro r[ORDEM];
-    tipo_apontador p[ORDEM+1];
-};
+#include "pag.h"
 
 // Funções da Árvore B
 void inicializa(tipo_apontador *arvore);

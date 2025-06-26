@@ -186,42 +186,9 @@ int main(int argc, char *argv[]) {
             }
             break;
         case 4:
-            // Árvore B*
-            {
-                tipo_apontador_estrela arvore = construir_arvore_b_estrela(nomeArquivo, quantidade);
-
-                if (arvore == NULL)
-                    return -1;
+            printf("Para fazer ainda B-Estrela!\n");
 
 
-                tipo_registro_estrela x;
-                x.chave = chave;
-                int resultado = 0;
-                if (arvore)
-                    resultado = pesquisa_b_estrela(&x, arvore);
-
-                if (resultado)
-                    printf("Registro encontrado: chave = %d\n", x.chave);
-                else
-                    printf("Registro não encontrado\n");
-                print_counters_bstar();
-
-                if (exibirChaves) {
-                    for (int i = 6; i < argc; i++) {
-                        tipo_registro_estrela x;
-                        x.chave = atoi(argv[i]);
-                        resultado = pesquisa_b_estrela(&x, arvore);
-
-                        if (resultado)
-                            printf("Registro encontrado: chave = %d\n", x.chave);
-                        else
-                            printf("Registro não encontrado\n");
-                        print_counters_bstar();
-                    }
-                }
-                if (arvore)
-                    libera_arvore_b_estrela(arvore);
-            }
             break;
         default:
             printf("Método inválido! Use 1 a 4.\n");
