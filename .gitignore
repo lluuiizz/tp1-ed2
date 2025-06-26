@@ -1,5 +1,4 @@
 create_bin
 scratch*
 *_test*
-./regs_binaries
-./regs_binaries/*
+regs_binaries/*.bin
