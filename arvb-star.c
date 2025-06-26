@@ -196,6 +196,28 @@ void insere_b_estrela(tipo_registro_estrela reg, tipo_apontador_estrela *arv) {
     }
 }
 
+tipo_apontador_estrela contruir_arvore_b_estrela(const char *nomeArquivo, int quantidade) {
+    FILE *fp = fopen(nomeArquivo, "rb");
+    if (!fp) {
+        printf("Erro ao abrir arquivo %s\n", nomeArquivo);
+        return NULL;
+    }
+
+
+    tipo_apontador_estrela arvore;
+    inicializa_b_estrela(&arvore);
+    tipo_registro_estrela temp;
+
+    for (int i = 0; i < quantidade; i++) {
+        fread(&temp, sizeof(tipo_registro_estrela), 1, fp);
+        insere_b_estrela(temp, &arvore);
+    }
+    fclose(fp);
+
+
+    return arvore;
+}
+
 // Libera toda a memória da árvore B* (recursivo)
 void libera_arvore_b_estrela(tipo_apontador_estrela arvore) {
     if (!arvore) return;

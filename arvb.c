@@ -177,12 +177,10 @@ tipo_apontador construir_arvore_b(const char *nomeArquivo, int quantidade) {
     tipo_apontador arvore;
     inicializa(&arvore);
 
-    reg_t temp;
+    tipo_registro temp;
     for (int i = 0; i < quantidade; i++) {
-        fread(&temp, sizeof(reg_t), 1, arq);
-        tipo_registro reg;
-        reg.chave = temp.chave;
-        insere(reg, &arvore);
+        fread(&temp, sizeof(tipo_registro),1, arq);
+        insere(temp, &arvore);
     }
     fclose(arq);
     return arvore;

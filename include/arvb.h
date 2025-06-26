@@ -10,6 +10,9 @@ typedef struct tipo_pagina* tipo_apontador;
 
 typedef struct {
     int chave;
+    long dado1;
+    char dado2[1000];
+    char dado3[5000];
 } tipo_registro;
 
 struct tipo_pagina {

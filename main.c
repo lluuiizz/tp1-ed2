@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[]) {
     if (argc < 5) {
-        printf("Uso: ./nome-arquivo <método> <quantidade> <situação> <chave> [-P]\n");
+        printf("Uso: ./main <método> <quantidade> <situação> <chave> [-P]\n");
         return 1;
     }
 
@@ -48,11 +48,13 @@ int main(int argc, char *argv[]) {
                 else
                     found = search(fp, "desc", table, &x);
 
-                if (found)
+                if (found){
                     printf("Registro encontrado: chave = %d\n", x.chave);
+                    printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
+
+                }
                 else
                     printf("Registro não encontrado\n");
-                print_counters_asi();
 
                 if (exibirChaves) {
                     for (int i = 6; i < argc; i++) {
@@ -63,13 +65,18 @@ int main(int argc, char *argv[]) {
                         else
                             found = search(fp, "desc", table, &x);
 
-                        if (found)
+                        if (found){
                             printf("Registro encontrado: chave = %d\n", x.chave);
+                            printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
+
+                        }
                         else
-                            printf("Registro não encontrado\n");
-                        print_counters_asi();
+                            printf("Registro não encontrado, chave = %d\n", x.chave);
+
                     }
                 }
+
+                print_counters_asi();
                 fclose(fp);
                 free(table.table);
             }
@@ -96,24 +103,30 @@ int main(int argc, char *argv[]) {
                 x.chave = chave;
                 bool found = binary_search(btree, &x);
 
-                if (found)
+                if (found){
                     printf("Registro encontrado: chave = %d\n", x.chave);
+                    printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
+
+                }
                 else
                     printf("Registro não encontrado\n");
-                print_counters_abin();
                 if (exibirChaves) {
                     for (int i = 6; i < argc; i++) {
+                        fseek(btree, 0, SEEK_SET);
                         reg_t x;
                         x.chave = atoi(argv[i]);
                         found = binary_search(btree, &x);
 
-                        if (found)
+                        if (found){
                             printf("Registro encontrado: chave = %d\n", x.chave);
+                            printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
+
+                        }
                         else
-                            printf("Registro não encontrado\n");
-                        print_counters_asi();
+                            printf("Registro não encontrado, chave = %d\n", x.chave);
                     }
                 }
+                print_counters_abin();
                 fclose(btree);
             }
             break;
@@ -122,20 +135,20 @@ int main(int argc, char *argv[]) {
             {
                 tipo_apontador arvore = construir_arvore_b(nomeArquivo, quantidade);
 
-                if (exibirChaves && arvore) {
-                    exibir_reg_arvb(arvore); printf("\n");
-                }
+                if (arvore == NULL)
+                    return -1;
                 tipo_registro x;
                 x.chave = chave;
                 bool found;
                 if (arvore)
                     found = pesquisa_arvore_b(&x, arvore);
 
-                if (found )
+                if (found ){
                     printf("Registro encontrado: chave = %d\n", x.chave);
+                    printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
+                }
                 else
                     printf("Registro não encontrado\n");
-                print_counters_arvb();
 
                 if (exibirChaves) {
                     for (int i = 6; i < argc; i++) {
@@ -143,13 +156,16 @@ int main(int argc, char *argv[]) {
                         x.chave = atoi(argv[i]);
                         found = pesquisa_arvore_b(&x, arvore);
 
-                        if (found)
+                        if (found){
                             printf("Registro encontrado: chave = %d\n", x.chave);
+                            printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
+                        }
                         else
-                            printf("Registro não encontrado\n");
-                        print_counters_asi();
+                            printf("Registro não encontrado: chave = %d\n\n", x.chave);
                     }
                 }
+
+                print_counters_arvb();
                 if (arvore)
                     libera_arvore_b(arvore);
             }
@@ -157,25 +173,10 @@ int main(int argc, char *argv[]) {
         case 4:
             // Árvore B*
             {
-                tipo_apontador_estrela arvore = NULL;
-                inicializa_b_estrela(&arvore);
+                tipo_apontador_estrela arvore = construir_arvore_b_estrela(nomeArquivo, quantidade);
 
-                FILE *fp = fopen(nomeArquivo, "rb");
-                if (!fp) {
-                    printf("Erro ao abrir arquivo %s\n", nomeArquivo);
-                    return 1;
-                }
-
-                reg_t temp;
-                for (int i = 0; i < quantidade; i++) {
-                    fread(&temp, sizeof(reg_t), 1, fp);
-                    tipo_registro_estrela reg;
-                    reg.chave = temp.chave;
-                    // copie outros campos se necessário
-                    insere_b_estrela(reg, &arvore);
-                }
-                fclose(fp);
-
+                if (arvore == NULL)
+                    return -1;
 
 
                 tipo_registro_estrela x;
@@ -200,7 +201,7 @@ int main(int argc, char *argv[]) {
                             printf("Registro encontrado: chave = %d\n", x.chave);
                         else
                             printf("Registro não encontrado\n");
-                        print_counters_asi();
+                        print_counters_bstar();
                     }
                 }
                 if (arvore)

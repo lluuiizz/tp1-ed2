@@ -133,35 +133,26 @@ bool binary_search(FILE *source, reg_t *x){
     else if (search_key < reg_node.reg.chave){
         COMP_CHAVES_ABIN_POS++; // Conta comparação de chave
         if (reg_node.left_node == -1)
-            return returned_value; // Não encontrou
+            return false; // Não encontrou
         long desloc = reg_node.left_node * sizeof(reg_abin_t);
         fseek(source, desloc, SEEK_SET);
-        binary_search(source, x);
+        return binary_search(source, x);
     }
     // Se a chave buscada é maior, busca à direita
     else {
         COMP_CHAVES_ABIN_POS++; // Conta comparação de chave
         if (reg_node.right_node == -1)
-            return returned_value; // Não encontrou
+            return false; // Não encontrou
         long desloc = reg_node.right_node * sizeof(reg_abin_t);
         fseek(source, desloc, SEEK_SET);
-        binary_search(source, x);
+        return binary_search(source, x);
     }
+
 
     return returned_value;
 }
 
-void exibir_reg_abin(FILE *fp, int quantidade) {
-    reg_abin_t temp;
-    fseek(fp, 0, SEEK_SET);
-    printf("Chaves dos registros:\n");
-    for (int i = 0; i < quantidade; i++) {
-        fread(&temp, sizeof(reg_abin_t), 1, fp);
-        printf("%d ", temp.reg.chave);
-    }
-    printf("\n");
-    fseek(fp, 0, SEEK_SET); // Volta para o início para a busca
-}
+
 
 void print_counters_abin() { // Função para exibir os contadores de transferências e comparações
     printf("Pré-processamento:\n");

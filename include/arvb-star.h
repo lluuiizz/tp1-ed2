@@ -8,6 +8,9 @@
 
 typedef struct {
     int chave;
+    long dado1;
+    char dado2[1000];
+    char dado3[5000];
 } tipo_registro_estrela;
 
 typedef struct tipo_pagina_estrela* tipo_apontador_estrela;
@@ -20,6 +23,7 @@ typedef struct tipo_pagina_estrela {
 
 // Funções da Árvore B*
 void inicializa_b_estrela(tipo_apontador_estrela *arvore);
+tipo_apontador_estrela construir_arvore_b_estrela(const char *nomeArquivo, int quantidade);
 bool pesquisa_b_estrela(tipo_registro_estrela *x, tipo_apontador_estrela ap);
 void exibir_reg_arvbstar(tipo_apontador_estrela arvore);
 void insere_b_estrela(tipo_registro_estrela reg, tipo_apontador_estrela *ap);
