@@ -21,18 +21,17 @@ int main(int argc, char *argv[]) {
 
     char nomeArquivo[64] = {0};
     if (situacao == 1) {
-        printf("estou em situacao 1");
-        strcpy(nomeArquivo, "regs_binaries/asc.bin");
-        nomeArquivo[21] = '\0';
+        strcpy(nomeArquivo, "regs_bin/asc.bin");
+        nomeArquivo[17] = '\0';
 
     }
     else if (situacao == 2){
-        strcpy(nomeArquivo, "regs_binaries/desc.bin");
-        nomeArquivo[22] = '\0';
+        strcpy(nomeArquivo, "regs_bin/desc.bin");
+        nomeArquivo[18] = '\0';
     }
     else{
-        strcpy(nomeArquivo, "regs_binaries/al.bin");
-        nomeArquivo[20] = '\0';
+        strcpy(nomeArquivo, "regs_bin/al.bin");
+        nomeArquivo[26] = '\0';
 
     }
 
@@ -64,7 +63,6 @@ int main(int argc, char *argv[]) {
                     found = search(fp, "desc", table, &x);
 
                 if (found){
-                    printf("Registro encontrado: chave = %d\n", x.chave);
                     printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
 
                 }
@@ -152,6 +150,7 @@ int main(int argc, char *argv[]) {
 
                 if (arvore == NULL)
                     return -1;
+
                 tipo_registro x;
                 x.chave = chave;
                 bool found;
@@ -181,8 +180,6 @@ int main(int argc, char *argv[]) {
                 }
 
                 print_counters_arvb();
-                if (arvore)
-                    libera_arvore_b(arvore);
             }
             break;
         case 4:
