@@ -2,4 +2,4 @@ create_bin
 main
 scratch*
 *_test*
-regs_binaries/*.bin
+*.bin
