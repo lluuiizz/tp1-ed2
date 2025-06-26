@@ -1,16 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <math.h>
-
+#include "../include/arvb-star.h"
 // Definições de constantes e tipos
-#define M 2
-#define MM (2*M)
-#define M2 2
-#define MM2 (2*M2)
-
 // Contadores para pré-processamento (construção da árvore B*)
+
 int TRANSF_EXT_INT_BSTAR_PRE = 0;
 int COMP_CHAVES_BSTAR_PRE = 0;
 
@@ -18,57 +9,28 @@ int COMP_CHAVES_BSTAR_PRE = 0;
 int TRANSF_EXT_INT_BSTAR_POS = 0;
 int COMP_CHAVES_BSTAR_POS = 0;
 
-typedef long TipoChave;
-
-typedef struct {
-    TipoChave Chave;
-    long dado1;
-    char dado2[1000];
-    char dado3[5000];
-} TipoRegistro;
-
-typedef enum { Interna, Externa } TipoIntExt;
-
-typedef struct TipoPagina* TipoApontador;
-
-// === ESTRUTURA CORRIGIDA AQUI ===
-typedef struct TipoPagina {
-    TipoIntExt Pt;
-    union {
-        struct {
-            int ni;
-            TipoChave ri[MM];
-            TipoApontador pi[MM + 1];
-        } U0;
-        struct {
-            int ne;
-            TipoRegistro re[MM2];
-        } U1;
-    } UU;
-} TipoPagina;
-// ================================
-
 // Inicializa a árvore B* (define ponteiro raiz como NULL)
 void InicializaBStar(TipoApontador* Arvore) {
-    *Arvore = NULL;
+        *Arvore = NULL;
 }
 
 // Função de pesquisa
-void PesquisaBStar(TipoRegistro* x, TipoApontador Ap) {
-    int i;
-    if (Ap == NULL) {
-        printf("Chave %ld nao encontrada\n", x->Chave);
-        return;
-    }
-
-    if (Ap->Pt == Interna) {
-        i = 0;
-        while (i < Ap->UU.U0.ni && x->Chave >= Ap->UU.U0.ri[i]) {
-            COMP_CHAVES_BSTAR_POS++;
-            i++;
+bool PesquisaBStar(TipoRegistro* x, TipoApontador Ap) {
+        int i;
+        static bool returned_value = false;
+        if (Ap == NULL) {
+            printf("Chave %ld nao encontrada\n", x->Chave);
+            return returned_value;
         }
-        PesquisaBStar(x, Ap->UU.U0.pi[i]);
-        return;
+
+        if (Ap->Pt == Interna) {
+            i = 0;
+            while (i < Ap->UU.U0.ni && x->Chave >= Ap->UU.U0.ri[i]) {
+                COMP_CHAVES_BSTAR_POS++;
+                i++;
+            }
+            PesquisaBStar(x, Ap->UU.U0.pi[i]);
+        return returned_value;
     }
 
     // Se a página for externa, procura o registro
@@ -77,10 +39,12 @@ void PesquisaBStar(TipoRegistro* x, TipoApontador Ap) {
         if (x->Chave == Ap->UU.U1.re[i].Chave) {
             *x = Ap->UU.U1.re[i];
             printf("Chave %ld encontrada\n", x->Chave);
-            return;
+            returned_value = true;
+            return returned_value;
         }
     }
     printf("Chave %ld nao encontrada\n", x->Chave);
+    return returned_value;
 }
 
 // Funções de impressão para debug
@@ -100,14 +64,6 @@ void ImprimeBStar(TipoApontador Arvore, int nivel) {
         for (i = 0; i < Arvore->UU.U1.ne; i++) printf("%ld ", Arvore->UU.U1.re[i].Chave);
         printf("\n");
     }
-}
-
-void ImprimeArvoreFormatada(TipoApontador Arvore) {
-    printf("\n===========================\n");
-    printf("    REPRESENTACAO DA ARVORE B*\n");
-    printf("===========================\n");
-    ImprimeBStar(Arvore, 0);
-    printf("===========================\n\n");
 }
 
 // Funções auxiliares de inserção
@@ -267,181 +223,6 @@ void InsereBStar(TipoRegistro Reg, TipoApontador* Ap) {
     }
 }
 
-// ** INÍCIO DAS FUNÇÕES DE REMOÇÃO **
-
-// CORRIGIDO: Função auxiliar para remover uma chave e um ponteiro de uma página interna
-// A correção garante que os ponteiros sejam deslocados corretamente.
-void RemoveDaPaginaInterna(TipoPagina* Pag, int pos) {
-    // Desloca as chaves para a esquerda
-    for (int i = pos; i < Pag->UU.U0.ni - 1; i++) {
-        Pag->UU.U0.ri[i] = Pag->UU.U0.ri[i + 1];
-    }
-    // Desloca os ponteiros para a esquerda.
-    // O ponteiro à direita da chave removida (pi[pos+1]) e todos os seguintes
-    // devem ser movidos uma posição para a esquerda.
-    for (int i = pos + 1; i <= Pag->UU.U0.ni; i++) {
-        Pag->UU.U0.pi[i - 1] = Pag->UU.U0.pi[i];
-    }
-    Pag->UU.U0.ni--;
-}
-
-// Função auxiliar para remover um registro de uma página externa
-void RemoveDaPaginaExterna(TipoPagina* Pag, int pos) {
-    for (int i = pos; i < Pag->UU.U1.ne - 1; i++) {
-        Pag->UU.U1.re[i] = Pag->UU.U1.re[i + 1];
-    }
-    Pag->UU.U1.ne--;
-}
-
-// Função recursiva para remoção
-void Rem(TipoRegistro Reg, TipoApontador Ap, short* Diminuiu) {
-    int i;
-    *Diminuiu = false;
-
-    if (Ap == NULL) return; // Não encontrou a chave
-
-    if (Ap->Pt == Externa) {
-        // Encontra o registro na página folha
-        for (i = 0; i < Ap->UU.U1.ne; i++) {
-            COMP_CHAVES_BSTAR_POS++;
-            if (Ap->UU.U1.re[i].Chave == Reg.Chave) {
-                // Remove o registro
-                RemoveDaPaginaExterna(Ap, i);
-                
-                // Verifica underflow com a regra B-tree (quantidade < M2)
-                if (Ap->UU.U1.ne < M2) {
-                    *Diminuiu = true;
-                }
-                return;
-            }
-        }
-        return; // Chave não encontrada na folha
-    }
-
-    // Se for uma página interna, desce na árvore
-    i = 0;
-    while (i < Ap->UU.U0.ni && Reg.Chave >= Ap->UU.U0.ri[i]) {
-        COMP_CHAVES_BSTAR_POS++;
-        i++;
-    }
-
-    // Chamada recursiva para o filho
-    Rem(Reg, Ap->UU.U0.pi[i], Diminuiu);
-
-    // Lógica de rebalanceamento após o retorno da recursão
-    if (*Diminuiu) {
-        TipoApontador Filho = Ap->UU.U0.pi[i];
-        TipoApontador Esquerdo = NULL;
-        TipoApontador Direito = NULL;
-        int pos_separador_filho = i;
-
-        // Tenta encontrar um irmão à esquerda ou direita
-        if (i > 0) Esquerdo = Ap->UU.U0.pi[i - 1];
-        if (i < Ap->UU.U0.ni) Direito = Ap->UU.U0.pi[i + 1];
-
-        // Caso 1: Redistribuição do irmão direito (se tiver mais que o mínimo)
-        if (Direito != NULL && Filho->Pt == Direito->Pt) {
-            if ((Direito->Pt == Externa && Direito->UU.U1.ne > M2) ||
-                (Direito->Pt == Interna && Direito->UU.U0.ni > M)) {
-                
-                if (Filho->Pt == Externa) {
-                    InsereNaPaginaExterna(Filho, Direito->UU.U1.re[0]);
-                    RemoveDaPaginaExterna(Direito, 0);
-                    Ap->UU.U0.ri[pos_separador_filho] = Direito->UU.U1.re[0].Chave;
-                } else {
-                    // Mover a chave do pai para o filho
-                    InsereNaPaginaInterna(Filho, Ap->UU.U0.ri[pos_separador_filho], Direito->UU.U0.pi[0]);
-                    // Mover a primeira chave do irmão para o pai
-                    Ap->UU.U0.ri[pos_separador_filho] = Direito->UU.U0.ri[0];
-                    // Remover a chave e o ponteiro movido do irmão
-                    RemoveDaPaginaInterna(Direito, 0);
-                }
-                *Diminuiu = false;
-                return;
-            }
-        }
-
-        // Caso 2: Redistribuição do irmão esquerdo (se tiver mais que o mínimo)
-        if (Esquerdo != NULL && Filho->Pt == Esquerdo->Pt) {
-            if ((Esquerdo->Pt == Externa && Esquerdo->UU.U1.ne > M2) ||
-                (Esquerdo->Pt == Interna && Esquerdo->UU.U0.ni > M)) {
-                
-                if (Filho->Pt == Externa) {
-                    InsereNaPaginaExterna(Filho, Esquerdo->UU.U1.re[Esquerdo->UU.U1.ne - 1]);
-                    Esquerdo->UU.U1.ne--;
-                    Ap->UU.U0.ri[pos_separador_filho - 1] = Filho->UU.U1.re[0].Chave;
-                } else {
-                    TipoChave chave_separadora_pai = Ap->UU.U0.ri[pos_separador_filho - 1];
-                    TipoApontador ponteiro_ultimo = Esquerdo->UU.U0.pi[Esquerdo->UU.U0.ni];
-                    InsereNaPaginaInterna(Filho, chave_separadora_pai, ponteiro_ultimo);
-                    Ap->UU.U0.ri[pos_separador_filho - 1] = Esquerdo->UU.U0.ri[Esquerdo->UU.U0.ni - 1];
-                    Esquerdo->UU.U0.ni--;
-                }
-                *Diminuiu = false;
-                return;
-            }
-        }
-        
-        // Caso 3: Concatenação
-        TipoApontador a_mesclar_com = NULL;
-        int pos_chave_a_remover = -1;
-
-        if (Esquerdo != NULL) {
-            a_mesclar_com = Esquerdo;
-            pos_chave_a_remover = pos_separador_filho - 1;
-        } else if (Direito != NULL) {
-            a_mesclar_com = Direito;
-            pos_chave_a_remover = pos_separador_filho;
-        }
-        
-        if (a_mesclar_com != NULL) {
-            if (Filho->Pt == Externa) { // Mescla de folhas
-                for (int k = 0; k < Filho->UU.U1.ne; k++) {
-                    a_mesclar_com->UU.U1.re[a_mesclar_com->UU.U1.ne] = Filho->UU.U1.re[k];
-                    a_mesclar_com->UU.U1.ne++;
-                }
-            } else { // Mescla de nós internos
-                TipoChave chave_pai = Ap->UU.U0.ri[pos_chave_a_remover];
-                a_mesclar_com->UU.U0.ri[a_mesclar_com->UU.U0.ni] = chave_pai;
-                a_mesclar_com->UU.U0.pi[a_mesclar_com->UU.U0.ni] = Filho->UU.U0.pi[0];
-                a_mesclar_com->UU.U0.ni++;
-
-                for (int k = 0; k < Filho->UU.U0.ni; k++) {
-                    a_mesclar_com->UU.U0.ri[a_mesclar_com->UU.U0.ni] = Filho->UU.U0.ri[k];
-                    a_mesclar_com->UU.U0.pi[a_mesclar_com->UU.U0.ni + 1] = Filho->UU.U0.pi[k + 1];
-                    a_mesclar_com->UU.U0.ni++;
-                }
-            }
-            free(Filho);
-            RemoveDaPaginaInterna(Ap, pos_chave_a_remover);
-            
-            // Verifica underflow no nó pai com a nova regra (ni < M)
-            if (Ap->UU.U0.ni < M) {
-                *Diminuiu = true;
-            } else {
-                *Diminuiu = false;
-            }
-        }
-    }
-}
-
-void RemoveBStar(TipoRegistro Reg, TipoApontador* Ap) {
-    short Diminuiu;
-    Rem(Reg, *Ap, &Diminuiu);
-
-    // Se a raiz se tornou vazia (apenas um ponteiro), a altura diminuiu
-    if (Diminuiu && (*Ap)->UU.U0.ni == 0 && (*Ap)->Pt == Interna) {
-        TipoApontador nova_raiz = (*Ap)->UU.U0.pi[0];
-        free(*Ap);
-        *Ap = nova_raiz;
-    }
-    // Se a raiz se tornou um nó folha vazio, limpa a árvore
-    if (*Ap != NULL && (*Ap)->Pt == Externa && (*Ap)->UU.U1.ne == 0) {
-        free(*Ap);
-        *Ap = NULL;
-    }
-}
-
 void LiberaBStar(TipoApontador Ap) {
     if (Ap == NULL) return;
     if (Ap->Pt == Interna) {
@@ -465,30 +246,8 @@ void print_counters_bstar() {
     printf("    Comparacoes: %d\n", COMP_CHAVES_BSTAR_PRE + COMP_CHAVES_BSTAR_POS);
 }
 
-// *** FUNÇÃO DE CRIAÇÃO DE ARQUIVO BINÁRIO (para teste) ***
-void CriaArquivoBinarioDeTeste(const char* nome_arquivo) {
-    FILE* arquivo = fopen(nome_arquivo, "wb");
-    if (arquivo == NULL) {
-        fprintf(stderr, "Erro: Nao foi possivel criar o arquivo binario '%s'.\n", nome_arquivo);
-        return;
-    }
-
-    TipoRegistro reg;
-    long chaves_teste[] = {10, 50, 30, 20, 60, 40, 70, 80, 5, 15, 25, 35, 45, 55, 65, 75, 85, 90, 100, 1, 95};
-    int num_chaves = sizeof(chaves_teste) / sizeof(long);
-
-    printf("Criando arquivo binario de teste '%s' com %d chaves...\n", nome_arquivo, num_chaves);
-    for (int i = 0; i < num_chaves; i++) {
-        reg.Chave = chaves_teste[i];
-        fwrite(&reg, sizeof(TipoRegistro), 1, arquivo); 
-    }
-
-    fclose(arquivo);
-    printf("Arquivo binario criado com sucesso.\n");
-}
-
 // *** FUNÇÃO PARA CONSTRUIR A ÁRVORE A PARTIR DO ARQUIVO BINÁRIO ***
-void ConstroiArvoreDoArquivo(TipoApontador* Arvore, const char* nome_arquivo) {
+void ConstroiArvoreDoArquivo(TipoApontador* Arvore, const char* nome_arquivo, int quantidade) {
     FILE *arquivo = fopen(nome_arquivo, "rb");
     if (arquivo == NULL) {
         fprintf(stderr, "Erro: Nao foi possivel abrir o arquivo '%s'. Verifique se ele existe.\n", nome_arquivo);
@@ -496,58 +255,13 @@ void ConstroiArvoreDoArquivo(TipoApontador* Arvore, const char* nome_arquivo) {
     }
 
     TipoRegistro reg;
-    while (fread(&reg, sizeof(TipoRegistro), 1, arquivo) == 1) {
+    int i = 0;
+    while (fread(&reg, sizeof(TipoRegistro), 1, arquivo) == 1 && i < quantidade) {
         InsereBStar(reg, Arvore);
+        i++;
     }
 
     fclose(arquivo);
     printf("Arvore B* construida com sucesso a partir do arquivo '%s'.\n", nome_arquivo);
 }
 
-// Função principal para teste
-int main() {
-    TipoApontador arvore = NULL;
-    char nome_arquivo[] = "dados.bin";
-
-    // Cria o arquivo binário de teste
-    CriaArquivoBinarioDeTeste(nome_arquivo);
-    
-    // Constrói a árvore a partir do arquivo
-    InicializaBStar(&arvore);
-    ConstroiArvoreDoArquivo(&arvore, nome_arquivo);
-
-    // Imprime a árvore para verificar a estrutura.
-    printf("\n--- ARVORE APOS INSERCAO ---\n");
-    ImprimeArvoreFormatada(arvore);
-
-    // Exemplo de remoção de chaves.
-    TipoRegistro reg_remover;
-    long chaves_para_remover[] = {25, 30, 60, 50, 40, 10}; // Chaves para testar a remoção
-    printf("\n--- REMOCAO DE REGISTROS ---\n");
-    for(int i = 0; i < sizeof(chaves_para_remover) / sizeof(long); i++) {
-        reg_remover.Chave = chaves_para_remover[i];
-        printf("Removendo chave: %ld\n", reg_remover.Chave);
-        RemoveBStar(reg_remover, &arvore);
-        ImprimeArvoreFormatada(arvore);
-    }
-
-    // Exemplo de pesquisa após remoções
-    TipoRegistro reg_busca;
-    long chave_para_buscar;
-    printf("\n--- TESTE DE BUSCA APOS REMOCAO ---\n");
-    printf("Digite uma chave para buscar na arvore (ou Ctrl+D/Ctrl+Z para sair):\n");
-    
-    while (scanf("%ld", &chave_para_buscar) == 1) {
-        reg_busca.Chave = chave_para_buscar;
-        printf("\nProcurando chave %ld...\n", reg_busca.Chave);
-        PesquisaBStar(&reg_busca, arvore);
-        printf("\nDigite uma nova chave para buscar: ");
-    }
-
-    printf("\n");
-    print_counters_bstar();
-
-    LiberaBStar(arvore);
-
-    return 0;
-}

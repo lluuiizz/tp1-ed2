@@ -59,7 +59,6 @@ int main(int argc, char *argv[]) {
                     found = search(fp, "desc", table, &x);
 
                 if (found){
-                    printf("Registro encontrado: chave = %d\n", x.chave);
                     printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
 
                 }
@@ -76,7 +75,6 @@ int main(int argc, char *argv[]) {
                             found = search(fp, "desc", table, &x);
 
                         if (found){
-                            printf("Registro encontrado: chave = %d\n", x.chave);
                             printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
 
                         }
@@ -114,7 +112,6 @@ int main(int argc, char *argv[]) {
                 bool found = binary_search(btree, &x);
 
                 if (found){
-                    printf("Registro encontrado: chave = %d\n", x.chave);
                     printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
 
                 }
@@ -128,7 +125,6 @@ int main(int argc, char *argv[]) {
                         found = binary_search(btree, &x);
 
                         if (found){
-                            printf("Registro encontrado: chave = %d\n", x.chave);
                             printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
 
                         }
@@ -154,7 +150,6 @@ int main(int argc, char *argv[]) {
                     found = pesquisa_arvore_b(&x, arvore);
 
                 if (found ){
-                    printf("Registro encontrado: chave = %d\n", x.chave);
                     printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
                 }
                 else
@@ -167,7 +162,6 @@ int main(int argc, char *argv[]) {
                         found = pesquisa_arvore_b(&x, arvore);
 
                         if (found){
-                            printf("Registro encontrado: chave = %d\n", x.chave);
                             printf("Registro :: chave = %d :: Dado1 = %ld\n\n",x.chave, x.dado1);
                         }
                         else
@@ -184,9 +178,42 @@ int main(int argc, char *argv[]) {
             }
             break;
         case 4:
-            printf("Para fazer ainda B-Estrela!\n");
+            TipoApontador arvore = NULL;
+            InicializaBStar(&arvore);
+            ConstroiArvoreDoArquivo(&arvore, nomeArquivo, quantidade);
 
+            assert(arvore != NULL);
+            TipoRegistro primeira_chave;
+            primeira_chave.Chave = chave;
 
+            if (PesquisaBStar(&primeira_chave, arvore)){
+                printf("Registro :: chave = %ld :: Dado1 = %ld\n\n",primeira_chave.Chave, primeira_chave.dado1);
+            }
+            else {
+
+                printf("Registro não encontrado: chave = %ld\n\n", primeira_chave.Chave);
+            }
+
+           if (exibirChaves) {
+                for (int i = 6; i < argc; i++) {
+                    TipoRegistro x;
+                    x.Chave = atoi(argv[i]);
+
+                    if (PesquisaBStar(&x, arvore)) {
+                        printf("Registro :: chave = %ld :: Dado1 = %ld\n\n",x.Chave, x.dado1);
+                    }
+                    else {
+                        printf("Registro não encontrado: chave = %ld\n\n", x.Chave);
+                    }
+
+               }
+            }
+            print_counters_bstar();
+
+            LiberaBStar(arvore);
+            arvore = NULL;
+
+            assert(arvore == NULL);
             break;
         default:
             printf("Método inválido! Use 1 a 4.\n");
