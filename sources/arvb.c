@@ -16,10 +16,10 @@ bool pesquisa_arvore_b(tipo_registro *x, tipo_apontador Ap)
 {
     long i = 1;
 
-    static bool returned_value = false;
+
     if (Ap == NULL)
     {
-        return returned_value;
+        return false;
     }
 
     // Pesquisa sequencial para se encontrar o intervalo desejado
@@ -31,21 +31,20 @@ bool pesquisa_arvore_b(tipo_registro *x, tipo_apontador Ap)
     {
         COMP_CHAVES_ARVB_POS++;
         *x = Ap->r[i-1];
-        returned_value = true;
-        return returned_value;
+        return true;
     }
 
     // Ativacao recursiva da Pesquisa em uma das subarvores (esquerda ou direita)
     if (x->chave < Ap->r[i-1].chave){
         COMP_CHAVES_ARVB_POS++;
-        pesquisa_arvore_b(x, Ap->p[i-1]);
+        return pesquisa_arvore_b(x, Ap->p[i-1]);
     }
     else{
         COMP_CHAVES_ARVB_POS++;
-        pesquisa_arvore_b(x, Ap->p[i]);
+        return pesquisa_arvore_b(x, Ap->p[i]);
     }
 
-    return returned_value;
+    return false;
 }
 
 void insere_na_pag(tipo_apontador Ap, tipo_registro Reg, tipo_apontador ApDir)

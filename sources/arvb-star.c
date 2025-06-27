@@ -16,21 +16,19 @@ void InicializaBStar(TipoApontador* Arvore) {
 
 // Função de pesquisa
 bool PesquisaBStar(TipoRegistro* x, TipoApontador Ap) {
-        int i;
-        static bool returned_value = false;
-        if (Ap == NULL) {
-            printf("Chave %ld nao encontrada\n", x->Chave);
-            return returned_value;
-        }
+    int i;
+    if (Ap == NULL) {
+        printf("Chave %ld nao encontrada\n", x->Chave);
+        return false;
+    }
 
-        if (Ap->Pt == Interna) {
-            i = 0;
-            while (i < Ap->UU.U0.ni && x->Chave >= Ap->UU.U0.ri[i]) {
-                COMP_CHAVES_BSTAR_POS++;
-                i++;
-            }
-            PesquisaBStar(x, Ap->UU.U0.pi[i]);
-        return returned_value;
+    if (Ap->Pt == Interna) {
+        i = 0;
+        while (i < Ap->UU.U0.ni && x->Chave >= Ap->UU.U0.ri[i]) {
+            COMP_CHAVES_BSTAR_POS++;
+            i++;
+        }
+        return PesquisaBStar(x, Ap->UU.U0.pi[i]);
     }
 
     // Se a página for externa, procura o registro
@@ -39,12 +37,10 @@ bool PesquisaBStar(TipoRegistro* x, TipoApontador Ap) {
         if (x->Chave == Ap->UU.U1.re[i].Chave) {
             *x = Ap->UU.U1.re[i];
             printf("Chave %ld encontrada\n", x->Chave);
-            returned_value = true;
-            return returned_value;
+            return true;
         }
     }
-    printf("Chave %ld nao encontrada\n", x->Chave);
-    return returned_value;
+    return false;
 }
 
 // Funções de impressão para debug

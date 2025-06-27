@@ -186,7 +186,7 @@ int main(int argc, char *argv[]) {
             TipoRegistro primeira_chave;
             primeira_chave.Chave = chave;
 
-            if (PesquisaBStar(&primeira_chave, arvore)){
+            if (PesquisaBStar(&primeira_chave, arvore) == true){
                 printf("Registro :: chave = %ld :: Dado1 = %ld\n\n",primeira_chave.Chave, primeira_chave.dado1);
             }
             else {
@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
                     TipoRegistro x;
                     x.Chave = atoi(argv[i]);
 
-                    if (PesquisaBStar(&x, arvore)) {
+                    if (PesquisaBStar(&x, arvore) == true) {
                         printf("Registro :: chave = %ld :: Dado1 = %ld\n\n",x.Chave, x.dado1);
                     }
                     else {
